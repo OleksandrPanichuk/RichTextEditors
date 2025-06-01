@@ -1,5 +1,6 @@
+import { Card, CardBody, Spinner } from '@heroui/react'
+import { IconFileText } from '@tabler/icons-react'
 import { MentionNodeAttrs } from '@tiptap/extension-mention'
-
 import { SuggestionProps } from '@tiptap/suggestion'
 import {
     forwardRef,
@@ -15,7 +16,7 @@ interface IProps extends SuggestionProps<string, MentionNodeAttrs> {
     error?: boolean
 }
 
-// Styled MentionList component with modern UI design
+// Styled MentionList component with HeroUI design system
 export const MentionList = forwardRef(
     ({ loading, error, ...props }: IProps, ref) => {
         const [selectedIndex, setSelectedIndex] = useState(0)
@@ -69,71 +70,81 @@ export const MentionList = forwardRef(
         }))
 
         return (
-            <div className="border border-neutral-600 shadow-xl bg-neutral-800 shadow-black/20 flex flex-col rounded-lg overflow-hidden max-h-80 min-w-64 backdrop-blur-sm">
-                {loading && (
-                    <div className="flex items-center justify-center py-4 px-3 text-neutral-400 text-sm">
-                        <div className="animate-spin w-4 h-4 border-2 border-neutral-400 border-t-transparent rounded-full mr-2"></div>
-                        Loading...
-                    </div>
-                )}
-                {!loading && !error && items.length ? (
-                    <div className="py-1">
-                        {items.map((item, index) => (
-                            <button
-                                className={`
-                                    w-full text-left px-3 py-2 text-sm transition-all duration-150 ease-out
-                                    ${
-                                        index === selectedIndex
-                                            ? 'bg-blue-600 text-white shadow-sm'
-                                            : 'text-neutral-200 hover:bg-neutral-700 hover:text-white'
-                                    }
-                                    focus:outline-none focus:bg-blue-600 focus:text-white
-                                    active:bg-blue-700
-                                `.trim()}
-                                key={index}
-                                onClick={() => selectItem(index)}
-                            >
-                                <div className="flex items-center">
-                                    <div
-                                        className={`
-                                        w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium mr-3
+            <Card
+                className="max-h-80 min-w-64 shadow-xl backdrop-blur-sm border border-divider bg-content2"
+                shadow="lg"
+            >
+                <CardBody className="p-0">
+                    {loading && (
+                        <div className="flex items-center justify-center py-4 px-3 text-content2-foreground">
+                            <Spinner
+                                size="sm"
+                                color="default"
+                                className="mr-2"
+                            />
+                            <span className="text-sm">Loading...</span>
+                        </div>
+                    )}
+                    {!loading && !error && items.length ? (
+                        <div className="py-1">
+                            {items.map((item, index) => (
+                                <div
+                                    key={index}
+                                    className={`
+                                        px-3 py-2 cursor-pointer transition-all duration-150 ease-out
                                         ${
                                             index === selectedIndex
-                                                ? 'bg-white/20 text-white'
-                                                : 'bg-neutral-600 text-neutral-300'
+                                                ? 'bg-primary-100 text-primary-900 shadow-sm border-l-2 border-primary'
+                                                : 'text-content2-foreground hover:bg-content3'
                                         }
+                                        focus:outline-none focus:bg-primary-100 focus:text-primary-900
+                                        active:bg-primary-200
                                     `.trim()}
-                                    >
-                                        {item.label.charAt(0).toUpperCase()}
+                                    onClick={() => selectItem(index)}
+                                    onMouseEnter={() => setSelectedIndex(index)}
+                                >
+                                    {' '}
+                                    <div className="flex items-center">
+                                        <div
+                                            className={`
+                                                w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium mr-3
+                                                ${
+                                                    index === selectedIndex
+                                                        ? 'bg-primary-500 text-white'
+                                                        : 'bg-content3 text-content3-foreground'
+                                                }
+                                            `.trim()}
+                                        >
+                                            {(item.username || item.label)
+                                                .charAt(0)
+                                                .toUpperCase()}
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="font-medium text-sm">
+                                                @{item.username || item.label}
+                                            </span>
+                                            {item.fullName && (
+                                                <span className="text-xs text-content2-foreground/70">
+                                                    {item.fullName}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
-                                    <span className="font-medium">
-                                        {item.label}
-                                    </span>
                                 </div>
-                            </button>
-                        ))}
-                    </div>
-                ) : (
-                    !loading && (
-                        <div className="flex items-center justify-center py-6 px-3 text-neutral-500 text-sm">
-                            <svg
-                                className="w-5 h-5 mr-2"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                />
-                            </svg>
-                            No results found
+                            ))}
                         </div>
-                    )
-                )}
-            </div>
+                    ) : (
+                        !loading && (
+                            <div className="flex items-center justify-center py-6 px-3 text-content2-foreground">
+                                <IconFileText size={20} className="mr-2" />
+                                <span className="text-sm">
+                                    No results found
+                                </span>
+                            </div>
+                        )
+                    )}
+                </CardBody>
+            </Card>
         )
     },
 )

@@ -5,15 +5,15 @@ import {
     ShikiCodeBlockComponent,
     SmilieReplacer,
 } from '@/features/editor'
-import { ReactNodeViewRenderer, useEditor } from '@tiptap/react'
-import { StarterKit } from '@tiptap/starter-kit'
-import { Underline } from '@tiptap/extension-underline'
-import { CodeBlockShiki } from 'tiptap-extension-code-block-shiki'
+import { Highlight } from '@tiptap/extension-highlight'
+import { Placeholder } from '@tiptap/extension-placeholder'
 import { Subscript } from '@tiptap/extension-subscript'
 import { Superscript } from '@tiptap/extension-superscript'
-import { Highlight } from '@tiptap/extension-highlight'
 import { Typography } from '@tiptap/extension-typography'
-import { Placeholder } from '@tiptap/extension-placeholder'
+import { Underline } from '@tiptap/extension-underline'
+import { ReactNodeViewRenderer, useEditor } from '@tiptap/react'
+import { StarterKit } from '@tiptap/starter-kit'
+import { CodeBlockShiki } from 'tiptap-extension-code-block-shiki'
 
 export const useRichTextInput = () => {
     const editor = useEditor({
@@ -58,25 +58,104 @@ export const useRichTextInput = () => {
                     class: 'mention',
                 },
                 suggestion: {
-                    items: () => {
-                        return [
+                    char: '@',
+                    startOfLine: false,
+                    items: ({ query }: { query: string }) => {
+                        const allItems = [
                             {
                                 id: 'john_doe',
-                                label: 'John Doe',
+                                label: 'johndoe',
+                                username: 'johndoe',
+                                fullName: 'John Doe',
+                                email: 'john.doe@example.com',
                             },
                             {
                                 id: 'jane_doe',
-                                label: 'Jane Doe',
+                                label: 'janedoe',
+                                username: 'janedoe',
+                                fullName: 'Jane Doe',
+                                email: 'jane.doe@example.com',
                             },
                             {
                                 id: 'john_smith',
-                                label: 'John Smith',
+                                label: 'johnsmith',
+                                username: 'johnsmith',
+                                fullName: 'John Smith',
+                                email: 'john.smith@example.com',
                             },
                             {
                                 id: 'jane_smith',
-                                label: 'Jane Smith',
+                                label: 'janesmith',
+                                username: 'janesmith',
+                                fullName: 'Jane Smith',
+                                email: 'jane.smith@example.com',
+                            },
+                            {
+                                id: 'alice_johnson',
+                                label: 'alicej',
+                                username: 'alicej',
+                                fullName: 'Alice Johnson',
+                                email: 'alice.johnson@example.com',
+                            },
+                            {
+                                id: 'bob_wilson',
+                                label: 'bobw',
+                                username: 'bobw',
+                                fullName: 'Bob Wilson',
+                                email: 'bob.wilson@example.com',
                             },
                         ]
+
+                        if (!query.trim()) {
+                            return allItems.slice(0, 5)
+                        }
+
+                        // Normalize query for better matching
+                        const normalizedQuery = query.toLowerCase().trim()
+                        const queryWords = normalizedQuery.split(/\s+/)
+
+                        return allItems
+                            .filter((item) => {
+                                const searchFields = [
+                                    item.username,
+                                    item.fullName || '',
+                                    item.email || '',
+                                ].map((field) => field.toLowerCase())
+
+                                // Check if all query words match at least one field
+                                return queryWords.every((word) =>
+                                    searchFields.some((field) =>
+                                        field.includes(word),
+                                    ),
+                                )
+                            })
+                            .sort((a, b) => {
+                                // Prioritize exact username matches
+                                const aUsernameMatch = a.username
+                                    .toLowerCase()
+                                    .startsWith(normalizedQuery)
+                                const bUsernameMatch = b.username
+                                    .toLowerCase()
+                                    .startsWith(normalizedQuery)
+
+                                if (aUsernameMatch && !bUsernameMatch) return -1
+                                if (!aUsernameMatch && bUsernameMatch) return 1
+
+                                // Then prioritize full name matches
+                                const aFullNameMatch = (a.fullName || '')
+                                    .toLowerCase()
+                                    .startsWith(normalizedQuery)
+                                const bFullNameMatch = (b.fullName || '')
+                                    .toLowerCase()
+                                    .startsWith(normalizedQuery)
+
+                                if (aFullNameMatch && !bFullNameMatch) return -1
+                                if (!aFullNameMatch && bFullNameMatch) return 1
+
+                                // Finally sort alphabetically by username
+                                return a.username.localeCompare(b.username)
+                            })
+                            .slice(0, 5)
                     },
                 },
             }),

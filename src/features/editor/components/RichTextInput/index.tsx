@@ -34,8 +34,45 @@ export const RichTextInput = () => {
         // Don't send empty messages
         if (!textContent && attachedFiles.length === 0) return
 
+        // Extract mentioned user IDs from the editor's JSON document
+        const mentions: string[] = []
+        const doc = editor.getJSON()
+
+        const extractMentions = (node: Record<string, unknown>) => {
+            if (
+                node.type === 'mention' &&
+                typeof node.attrs === 'object' &&
+                node.attrs &&
+                'id' in node.attrs
+            ) {
+                const id = (node.attrs as { id?: string }).id
+                if (typeof id === 'string') {
+                    mentions.push(id)
+                }
+            }
+            if (Array.isArray(node.content)) {
+                node.content.forEach((child) => {
+                    if (typeof child === 'object' && child !== null) {
+                        extractMentions(child as Record<string, unknown>)
+                    }
+                })
+            }
+        }
+
+        if (Array.isArray(doc.content)) {
+            doc.content.forEach((node) => {
+                if (typeof node === 'object' && node !== null) {
+                    extractMentions(node as Record<string, unknown>)
+                }
+            })
+        }
+
         // TODO: Implement actual send logic here
-        console.log('Sending message:', { content, attachedFiles })
+        console.log('Sending message:', {
+            content,
+            attachedFiles,
+            mentions,
+        })
 
         // Clear the editor and attachments after sending
         editor.commands.clearContent()
